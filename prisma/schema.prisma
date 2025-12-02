@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+  binaryTargets = ["native", "linux-musl"]  // Production ready
+
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  password  String
+  role      UserRole
+  orders    Order[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  KASIR
+  KOKI
+}
+
+model Meja {
+  id        Int     @id @default(autoincrement())
+  nomor     String  @unique
+  code      String  @unique
+  qrcodeUrl String?
+  isActive  Boolean @default(true)
+  orders    Order[]
+}
+
+model Menu {
+  id        Int        @id @default(autoincrement())
+  nama      String
+  harga     Int
+  kategori  String
+  gambar    String?
+  isAvailable Boolean  @default(true)
+  items     OrderItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Order {
+  id                Int           @id @default(autoincrement())
+  mejaId            Int
+  meja              Meja          @relation(fields: [mejaId], references: [id])
+  userId            Int?
+  kasir             User?         @relation(fields: [userId], references: [id])
+  paymentMethod     PaymentMethod
+  statusPembayaran  PaymentStatus
+  statusPesanan     OrderStatus
+  total             Int
+  items             OrderItem[]
+  payments          PaymentLog[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model OrderItem {
+  id       Int   @id @default(autoincrement())
+  orderId  Int
+  menuId   Int
+  qty      Int
+  subtotal Int
+  order    Order @relation(fields: [orderId], references: [id])
+  menu     Menu  @relation(fields: [menuId], references: [id])
+}
+
+model PaymentLog {
+  id        Int           @id @default(autoincrement())
+  orderId   Int
+  method    PaymentMethod
+  status    PaymentLogStatus
+  detail    Json
+  createdAt DateTime       @default(now())
+  order     Order          @relation(fields: [orderId], references: [id])
+}
+
+
+enum PaymentMethod {
+  QRIS
+  CASH
+  NONE
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  READY
+  DONE
+  CANCELLED
+}
+
+enum PaymentLogStatus {
+  INITIATED
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
