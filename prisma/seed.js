@@ -38,18 +38,7 @@ async function main() {
   });
   console.log('✅ Kasir user created:', { id: kasir.id, username: kasir.username, role: kasir.role });
   
-  const kokiPassword = await bcrypt.hash('koki123', 10);
-  const koki = await prisma.user.upsert({
-    where: { username: 'koki' },
-    update: {},
-    create: {
-      username: 'koki',
-      password: kokiPassword,
-      role: 'KOKI',
-    },
-  });
-  console.log('✅ Koki user created:', { id: koki.id, username: koki.username, role: koki.role });
-  
+ 
   console.log('🎉 Seed completed!');
 }
 
