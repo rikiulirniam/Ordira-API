@@ -29,7 +29,6 @@ model User {
 enum UserRole {
   ADMIN
   KASIR
-  KOKI
 }
 
 model Meja {
