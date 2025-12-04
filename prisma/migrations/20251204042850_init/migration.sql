@@ -26,23 +26,27 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "Meja" (
+CREATE TABLE "Category" (
     "id" SERIAL NOT NULL,
-    "nomor" TEXT NOT NULL,
-    "code" TEXT NOT NULL,
-    "qrcodeUrl" TEXT,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "icon" TEXT,
+    "order" INTEGER NOT NULL DEFAULT 0,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Meja_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Menu" (
     "id" SERIAL NOT NULL,
-    "nama" TEXT NOT NULL,
-    "harga" INTEGER NOT NULL,
-    "kategori" TEXT NOT NULL,
-    "gambar" TEXT,
+    "name" TEXT NOT NULL,
+    "price" INTEGER NOT NULL,
+    "description" TEXT,
+    "image" TEXT,
+    "categoryId" INTEGER NOT NULL,
     "isAvailable" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -53,11 +57,11 @@ CREATE TABLE "Menu" (
 -- CreateTable
 CREATE TABLE "Order" (
     "id" SERIAL NOT NULL,
-    "mejaId" INTEGER NOT NULL,
+    "tableNumber" TEXT NOT NULL,
     "userId" INTEGER,
     "paymentMethod" "PaymentMethod" NOT NULL,
-    "statusPembayaran" "PaymentStatus" NOT NULL,
-    "statusPesanan" "OrderStatus" NOT NULL,
+    "paymentStatus" "PaymentStatus" NOT NULL,
+    "orderStatus" "OrderStatus" NOT NULL,
     "total" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -92,13 +96,10 @@ CREATE TABLE "PaymentLog" (
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Meja_nomor_key" ON "Meja"("nomor");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Meja_code_key" ON "Meja"("code");
+CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
 
 -- AddForeignKey
-ALTER TABLE "Order" ADD CONSTRAINT "Order_mejaId_fkey" FOREIGN KEY ("mejaId") REFERENCES "Meja"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Menu" ADD CONSTRAINT "Menu_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
