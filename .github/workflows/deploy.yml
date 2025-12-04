@@ -82,7 +82,10 @@ jobs:
             docker compose rm -fs db-ordira || true
 
             echo ">>> Remove DB volume..."
-            docker volume rm db-ordira || true
+            docker volume rm ordira_ordira-storage || true
+
+            echo ">>> Starting DB container..."
+            docker compose up --build -d db-ordira
 
             # Cek container berjalan
             if docker ps -q -f name=$SERVICE_NAME >/dev/null 2>&1; then
