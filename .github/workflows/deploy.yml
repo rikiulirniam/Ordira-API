@@ -75,6 +75,15 @@ jobs:
 
             export $(grep -v '^#' .env | xargs)
 
+            echo ">>> Stop DB service..."
+            docker compose stop db-ordira || true
+
+            echo ">>> Remove DB container..."
+            docker compose rm -fs db-ordira || true
+
+            echo ">>> Remove DB volume..."
+            docker volume rm db-ordira || true
+
             # Cek container berjalan
             if docker ps -q -f name=$SERVICE_NAME >/dev/null 2>&1; then
                 echo "Container ada dan sedang jalan. Stop & restart service..."
