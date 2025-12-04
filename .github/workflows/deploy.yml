@@ -1,0 +1,100 @@
+name: Divvy Deployment
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node 
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      
+      - name: Install Dependencies
+        run: npm i
+      
+      - name: Lint (non-blocking)
+        run: |
+          echo ">>> Running lint..."
+          npm run lint || echo ">>> Lint has errors but continuing..."
+
+  deploy:
+    name: Deploy 
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    needs: test
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOSTNAME }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: 55154
+          script: |
+            set -e
+
+            PROJECT_DIR="${{ secrets.PROJECT_DIRECTORY }}"
+            SERVICE_NAME="${{ secrets.ORDIRA_BE }}"
+
+            echo ">>> Masuk ke project directory..."
+            cd $PROJECT_DIR
+
+            echo ">>> Pull latest code..."
+            if [ ! -d "Ordira-Client" ]; then
+                git clone https://github.com/rikiulirniam/Ordira-API.git
+            else
+                cd Ordira-API
+                git fetch origin
+                git reset --hard origin/main
+                git clean -fd
+                cd ..
+            fi
+
+            echo ">>> Pastikan .env ada..."
+            if [ ! -f ".env" ]; then
+                echo "ERROR: .env tidak ditemukan!"
+                exit 1
+            fi
+
+            export $(grep -v '^#' .env | xargs)
+
+            # Cek container berjalan
+            if docker ps -q -f name=$SERVICE_NAME >/dev/null 2>&1; then
+                echo "Container ada dan sedang jalan. Stop & restart service..."
+                docker compose stop $SERVICE_NAME
+                docker compose build $SERVICE_NAME
+                docker compose up -d $SERVICE_NAME
+            else
+                echo "Service belum jalan. Build & up service..."
+                docker compose build $SERVICE_NAME
+                docker compose up -d $SERVICE_NAME
+            fi
+
+      - name: Show Logs
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOSTNAME }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: 55154
+          script: |
+            cd ${{ secrets.PROJECT_DIRECTORY }}
+            docker compose logs --tail=100
