@@ -31,41 +31,45 @@ enum UserRole {
   KASIR
 }
 
-model Meja {
-  id        Int     @id @default(autoincrement())
-  nomor     String  @unique
-  code      String  @unique
-  qrcodeUrl String?
-  isActive  Boolean @default(true)
-  orders    Order[]
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  icon        String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  menus       Menu[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Menu {
-  id        Int        @id @default(autoincrement())
-  nama      String
-  harga     Int
-  kategori  String
-  gambar    String?
-  isAvailable Boolean  @default(true)
-  items     OrderItem[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id          Int        @id @default(autoincrement())
+  name        String
+  price       Int
+  description String?
+  image       String?
+  categoryId  Int
+  category    Category   @relation(fields: [categoryId], references: [id])
+  isAvailable Boolean    @default(true)
+  items       OrderItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Order {
-  id                Int           @id @default(autoincrement())
-  mejaId            Int
-  meja              Meja          @relation(fields: [mejaId], references: [id])
-  userId            Int?
-  kasir             User?         @relation(fields: [userId], references: [id])
-  paymentMethod     PaymentMethod
-  statusPembayaran  PaymentStatus
-  statusPesanan     OrderStatus
-  total             Int
-  items             OrderItem[]
-  payments          PaymentLog[]
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  id             Int           @id @default(autoincrement())
+  tableNumber    String
+  userId         Int?
+  cashier        User?         @relation(fields: [userId], references: [id])
+  paymentMethod  PaymentMethod
+  paymentStatus  PaymentStatus
+  orderStatus    OrderStatus
+  total          Int
+  items          OrderItem[]
+  payments       PaymentLog[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 
 model OrderItem {
