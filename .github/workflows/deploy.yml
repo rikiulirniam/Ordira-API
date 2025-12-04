@@ -78,7 +78,7 @@ jobs:
             # Cek container berjalan
             if docker ps -q -f name=$SERVICE_NAME >/dev/null 2>&1; then
                 echo "Container ada dan sedang jalan. Stop & restart service..."
-                docker compose stop $SERVICE_NAME
+                docker compose rm -fs $SERVICE_NAME
                 docker compose build $SERVICE_NAME
                 docker compose up -d $SERVICE_NAME
             else
