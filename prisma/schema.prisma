@@ -21,7 +21,6 @@ model User {
   username  String    @unique
   password  String
   role      UserRole
-  orders    Order[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -61,7 +60,6 @@ model Order {
   id             Int           @id @default(autoincrement())
   tableNumber    String
   userId         Int?
-  cashier        User?         @relation(fields: [userId], references: [id])
   paymentMethod  PaymentMethod
   paymentStatus  PaymentStatus
   orderStatus    OrderStatus
