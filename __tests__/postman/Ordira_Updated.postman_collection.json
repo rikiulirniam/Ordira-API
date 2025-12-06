@@ -522,7 +522,7 @@
             "name": "Admin - Menu Management",
             "item": [
                 {
-                    "name": "Create Menu",
+                    "name": "Create Menu (JSON - No Image)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -543,12 +543,67 @@
                             "raw": "{{baseUrl}}/api/admin/menus",
                             "host": ["{{baseUrl}}"],
                             "path": ["api", "admin", "menus"]
-                        }
+                        },
+                        "description": "Create menu without image upload"
                     },
                     "response": []
                 },
                 {
-                    "name": "Update Menu",
+                    "name": "Create Menu with Image Upload",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "name",
+                                    "value": "Nasi Goreng Premium",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "Nasi goreng spesial dengan topping lengkap",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "price",
+                                    "value": "30000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "categoryId",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "isAvailable",
+                                    "value": "true",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "image",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/menus",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "menus"]
+                        },
+                        "description": "Create menu with image upload. Select an image file in the 'image' field."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Menu (JSON - No Image)",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -563,13 +618,53 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"name\": \"Updated Menu\",\n  \"price\": 30000,\n  \"isAvailable\": true\n}"
+                            "raw": "{\n  \"name\": \"Updated Menu\",\n  \"price\": 35000,\n  \"isAvailable\": true\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/api/admin/menus/1",
                             "host": ["{{baseUrl}}"],
                             "path": ["api", "admin", "menus", "1"]
-                        }
+                        },
+                        "description": "Update menu without changing image"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Menu with New Image",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "name",
+                                    "value": "Nasi Goreng Super Premium",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "price",
+                                    "value": "40000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "image",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/menus/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "menus", "1"]
+                        },
+                        "description": "Update menu and replace image. Old image will be automatically deleted."
                     },
                     "response": []
                 },
@@ -587,7 +682,8 @@
                             "raw": "{{baseUrl}}/api/admin/menus/1",
                             "host": ["{{baseUrl}}"],
                             "path": ["api", "admin", "menus", "1"]
-                        }
+                        },
+                        "description": "Delete menu and its associated image file"
                     },
                     "response": []
                 }
