@@ -19,12 +19,16 @@ Backend service untuk aplikasi Ordira (Restaurant Order Management System) mengg
 
 - 🔐 Authentication & Authorization (JWT)
 - 👥 User Management (Admin, Kasir, Koki)
-- 🍽️ Menu Management
+- 🍽️ Menu Management with Availability Control
 - 🪑 Table Management (Meja)
-- 📝 Order Management
-- 💳 Payment Processing (QRIS, Cash)
-- 📊 Payment Logs
+- 📝 Order Management with Item Notes
+- 💳 Payment Processing (QRIS, Cash, E-Payment)
+- 🏦 **Midtrans Payment Gateway Integration** (Sandbox & Production)
+- 📧 **Automated Email Receipts** after successful payment
+- 📊 Payment Logs & Transaction History
 - 🔒 Role-based Access Control
+- 🤖 AI-Powered Chat Assistant (Kolosal AI)
+- 📋 Kasir Menu Availability Management
 
 ## 🛠 Tech Stack
 
@@ -34,6 +38,9 @@ Backend service untuk aplikasi Ordira (Restaurant Order Management System) mengg
 - **ORM:** Prisma v7 with PostgreSQL Adapter
 - **Authentication:** JWT (jsonwebtoken)
 - **Password Hashing:** bcryptjs
+- **Payment Gateway:** Midtrans Client (Snap API)
+- **Email Service:** Nodemailer with SMTP
+- **AI Integration:** Kolosal AI API
 - **Environment:** dotenv
 - **Dev Tools:** Nodemon
 - **Testing:** Jest
@@ -113,6 +120,7 @@ Edit file `.env` dengan konfigurasi Anda:
 # Server Configuration
 PORT=3000
 NODE_ENV=development
+APP_URL=http://localhost:3000
 
 # Database Configuration
 DATABASE_URL="postgresql://user:password@localhost:5432/db_ordira?schema=public"
@@ -120,12 +128,28 @@ DATABASE_URL="postgresql://user:password@localhost:5432/db_ordira?schema=public"
 # JWT Configuration
 JWT_SECRET="your-super-secret-jwt-key"
 JWT_EXPIRES_IN=1d
+
+# Kolosal AI Configuration
+KOLOSAL_API_KEY=your-kolosal-api-key
+KOLOSAL_MODEL_ID=your-model-id
+
+# Midtrans Configuration (Sandbox)
+MIDTRANS_SERVER_KEY=SB-Mid-server-xxx
+MIDTRANS_CLIENT_KEY=SB-Mid-client-xxx
+
+# Email Configuration (SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
 ```
 
 **Catatan Penting:**
 - Ganti `user` dan `password` dengan credentials PostgreSQL Anda
 - Pastikan database `db_ordira` sudah dibuat
 - Gunakan JWT_SECRET yang kuat untuk production
+- Untuk Midtrans: Daftar di https://dashboard.sandbox.midtrans.com/
+- Untuk Gmail SMTP: Gunakan App Password (bukan password utama Gmail)
 
 ## 🗄️ Database Setup
 
@@ -192,12 +216,37 @@ Buka `http://localhost:5555` untuk melihat data dalam GUI.
 
 ## 📡 API Endpoints
 
-### Authentication
+Untuk dokumentasi lengkap, lihat folder `docs/`:
+- [AUTH_GUIDE.md](./docs/AUTH_GUIDE.md) - Authentication & Authorization
+- [MENU_API.md](./docs/MENU_API.md) - Menu Management
+- [ORDER_API.md](./docs/ORDER_API.md) - Order Management
+- [ADMIN_API.md](./docs/ADMIN_API.md) - Admin Features
+- [AI_CHAT_API.md](./docs/AI_CHAT_API.md) - AI Chat Assistant
+- [PAYMENT_API.md](./docs/PAYMENT_API.md) - **Payment & Midtrans Integration**
+- [KASIR_API.md](./docs/KASIR_API.md) - **Kasir Features**
+
+### Quick Reference
+
+#### Authentication
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | POST | `/auth/login` | ❌ | Login user |
 | POST | `/auth/register` | ✅ Admin | Register user baru |
+
+#### Payment (NEW! 💳)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/payment/create` | ❌ | Create Midtrans payment |
+| POST | `/api/payment/notification` | ❌ | Midtrans webhook |
+| GET | `/api/payment/status/:orderId` | ❌ | Check payment status |
+
+#### Kasir (NEW! 📋)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| PATCH | `/api/kasir/menus/:id/availability` | ✅ Kasir | Toggle menu availability |
 
 ### Response Format
 
@@ -286,10 +335,10 @@ npm test
 
 - **User** - User accounts (Admin, Kasir, Koki)
 - **Meja** - Restaurant tables
-- **Menu** - Menu items
-- **Order** - Customer orders
-- **OrderItem** - Order details (line items)
-- **PaymentLog** - Payment transaction logs
+- **Menu** - Menu items with availability control
+- **Order** - Customer orders with email for receipts
+- **OrderItem** - Order details with custom notes per item
+- **PaymentLog** - Payment transaction logs with Midtrans tracking
 
 ### User Roles
 
@@ -308,10 +357,17 @@ PENDING → PAID → PROCESSING → READY → DONE
 ### Payment Status
 
 - `UNPAID` - Order belum dibayar
-- `PENDING` - Pembayaran sedang diproses
 - `PAID` - Pembayaran berhasil
-- `FAILED` - Pembayaran gagal
-- `CANCELLED` - Pembayaran dibatalkan
+- `CANCELLED` - Order/pembayaran dibatalkan
+
+### Payment Methods
+
+- `QRIS` - Quick Response Indonesian Standard
+- `CASH` - Cash payment
+- `GOPAY` - GoPay e-wallet
+- `BANK_TRANSFER` - Virtual Account
+- `CREDIT_CARD` - Credit/Debit Card
+- `NONE` - No payment method selected
 
 ## 🔧 Scripts
 

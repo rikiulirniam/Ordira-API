@@ -1,7 +1,7 @@
 {
     "info": {
-        "name": "Ordira API v2",
-        "description": "Complete API collection for Ordira restaurant ordering system",
+        "name": "Ordira API - Complete",
+        "description": "Complete API collection for Ordira restaurant ordering system with CRUD management",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [

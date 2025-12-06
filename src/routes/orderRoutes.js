@@ -4,7 +4,6 @@ import {
   getOrder,
   getTableOrders,
   listOrders,
-  updateOrder,
   updatePayment,
   cancelOrderController,
   getOrderStats,
@@ -21,7 +20,6 @@ router.post('/orders/:id/cancel', cancelOrderController);
 
 // Protected endpoints - Admin/Kasir only
 router.get('/orders', authenticate, authorize(['ADMIN', 'KASIR']), listOrders);
-router.patch('/orders/:id/status', authenticate, authorize(['ADMIN', 'KASIR']), updateOrder);
 router.patch('/orders/:id/payment', authenticate, authorize(['ADMIN', 'KASIR']), updatePayment);
 router.get('/orders/stats/summary', authenticate, authorize(['ADMIN']), getOrderStats);
 

@@ -59,10 +59,9 @@ model Menu {
 model Order {
   id             Int           @id @default(autoincrement())
   tableNumber    String
-  userId         Int?
+  customerEmail  String?       // Email untuk kirim struk
   paymentMethod  PaymentMethod
   paymentStatus  PaymentStatus
-  orderStatus    OrderStatus
   total          Int
   items          OrderItem[]
   payments       PaymentLog[]
@@ -71,13 +70,14 @@ model Order {
 }
 
 model OrderItem {
-  id       Int   @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   orderId  Int
   menuId   Int
   qty      Int
   subtotal Int
-  order    Order @relation(fields: [orderId], references: [id])
-  menu     Menu  @relation(fields: [menuId], references: [id])
+  note     String? // Catatan untuk pesanan menu
+  order    Order   @relation(fields: [orderId], references: [id])
+  menu     Menu    @relation(fields: [menuId], references: [id])
 }
 
 model PaymentLog {
@@ -99,18 +99,7 @@ enum PaymentMethod {
 
 enum PaymentStatus {
   UNPAID
-  PENDING
   PAID
-  FAILED
-  CANCELLED
-}
-
-enum OrderStatus {
-  PENDING
-  PAID
-  PROCESSING
-  READY
-  DONE
   CANCELLED
 }
 

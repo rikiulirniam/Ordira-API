@@ -3,7 +3,7 @@ import { prisma } from '../models/prismaClient.js';
 /**
  * Create a new order
  */
-export async function createOrder({ tableNumber, items, paymentMethod = 'NONE' }) {
+export async function createOrder({ tableNumber, items, paymentMethod = 'NONE', customerEmail }) {
   // Validate items
   if (!items || items.length === 0) {
     throw new Error('Order must have at least one item');
@@ -37,6 +37,7 @@ export async function createOrder({ tableNumber, items, paymentMethod = 'NONE' }
       menuId: item.menuId,
       qty: item.qty,
       subtotal,
+      note: item.note || null, // Include note
     };
   });
 
@@ -44,9 +45,9 @@ export async function createOrder({ tableNumber, items, paymentMethod = 'NONE' }
   const order = await prisma.order.create({
     data: {
       tableNumber,
+      customerEmail,
       paymentMethod,
       paymentStatus: 'UNPAID',
-      orderStatus: 'PENDING',
       total,
       items: {
         create: orderItems,
@@ -133,12 +134,8 @@ export async function getOrdersByTable(tableNumber) {
 /**
  * Get all orders with filters
  */
-export async function getAllOrders({ status, paymentStatus, limit = 50, offset = 0 }) {
+export async function getAllOrders({ paymentStatus, limit = 50, offset = 0 }) {
   const where = {};
-  
-  if (status) {
-    where.orderStatus = status;
-  }
   
   if (paymentStatus) {
     where.paymentStatus = paymentStatus;
@@ -174,43 +171,11 @@ export async function getAllOrders({ status, paymentStatus, limit = 50, offset =
     offset,
   };
 }
-
-/**
- * Update order status
- */
-export async function updateOrderStatus(orderId, orderStatus) {
-  const validStatuses = ['PENDING', 'PAID', 'PROCESSING', 'READY', 'DONE', 'CANCELLED'];
-  
-  if (!validStatuses.includes(orderStatus)) {
-    throw new Error(`Invalid order status. Must be one of: ${validStatuses.join(', ')}`);
-  }
-
-  const order = await prisma.order.update({
-    where: { id: orderId },
-    data: { orderStatus },
-    include: {
-      items: {
-        include: {
-          menu: {
-            select: {
-              id: true,
-              name: true,
-              price: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  return order;
-}
-
 /**
  * Update payment status
  */
 export async function updatePaymentStatus(orderId, paymentStatus, paymentMethod) {
-  const validStatuses = ['UNPAID', 'PENDING', 'PAID', 'FAILED', 'CANCELLED'];
+  const validStatuses = ['UNPAID', 'PAID', 'CANCELLED'];
   
   if (!validStatuses.includes(paymentStatus)) {
     throw new Error(`Invalid payment status. Must be one of: ${validStatuses.join(', ')}`);
@@ -220,11 +185,6 @@ export async function updatePaymentStatus(orderId, paymentStatus, paymentMethod)
   
   if (paymentMethod) {
     updateData.paymentMethod = paymentMethod;
-  }
-
-  // If payment is successful, update order status to PAID
-  if (paymentStatus === 'PAID' && updateData.orderStatus !== 'CANCELLED') {
-    updateData.orderStatus = 'PAID';
   }
 
   const order = await prisma.order.update({
@@ -248,6 +208,7 @@ export async function updatePaymentStatus(orderId, paymentStatus, paymentMethod)
   return order;
 }
 
+
 /**
  * Cancel order
  */
@@ -264,14 +225,9 @@ export async function cancelOrder(orderId) {
     throw new Error('Cannot cancel a paid order');
   }
 
-  if (order.orderStatus === 'DONE') {
-    throw new Error('Cannot cancel a completed order');
-  }
-
   const updatedOrder = await prisma.order.update({
     where: { id: orderId },
     data: {
-      orderStatus: 'CANCELLED',
       paymentStatus: 'CANCELLED',
     },
     include: {
@@ -313,7 +269,6 @@ export default {
   getOrderById,
   getOrdersByTable,
   getAllOrders,
-  updateOrderStatus,
   updatePaymentStatus,
   cancelOrder,
   addPaymentLog,
