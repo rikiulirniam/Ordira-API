@@ -1,0 +1,721 @@
+{
+    "info": {
+        "name": "Ordira API - Updated",
+        "description": "Updated Ordira restaurant ordering system with simplified seeder (admin only)",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_exporter_id": "ordira-api"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Login - Admin",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('token', jsonData.data.token);",
+                                    "    console.log('Token saved:', jsonData.data.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "login"]
+                        },
+                        "description": "Login with default admin credentials (from seeder)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Register - Create Kasir User (Admin Only)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"kasir\",\n  \"password\": \"kasir123\",\n  \"role\": \"KASIR\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "register"]
+                        },
+                        "description": "Create a Kasir user (requires admin authentication)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login - Kasir",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('token', jsonData.data.token);",
+                                    "    console.log('Kasir token saved:', jsonData.data.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"kasir\",\n  \"password\": \"kasir123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "login"]
+                        },
+                        "description": "Login with kasir user (must be created first via register endpoint)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Public - Categories & Menus",
+            "item": [
+                {
+                    "name": "Get All Categories with Menus",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/categories",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "categories"]
+                        },
+                        "description": "Get all categories with their menus (public endpoint)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Menus by Category",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/menus?categoryId=1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "menus"],
+                            "query": [
+                                {
+                                    "key": "categoryId",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "description": "Filter menus by category ID"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Menu by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/menus/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "menus", "1"]
+                        },
+                        "description": "Get specific menu details"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Orders",
+            "item": [
+                {
+                    "name": "Create Order with Notes & Email",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tableNumber\": \"5\",\n  \"items\": [\n    {\n      \"menuId\": 1,\n      \"qty\": 2,\n      \"note\": \"Pedas sedang, tanpa bawang\"\n    },\n    {\n      \"menuId\": 2,\n      \"qty\": 1,\n      \"note\": \"Es lebih banyak\"\n    }\n  ],\n  \"customerEmail\": \"customer@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/orders",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "orders"]
+                        },
+                        "description": "Create new order with item notes and customer email for receipt"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get All Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/orders",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "orders"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Order by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/orders/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "orders", "1"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Payment",
+            "item": [
+                {
+                    "name": "Create Payment - Midtrans",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"orderId\": 1,\n  \"customerEmail\": \"customer@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/payment/create",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "payment", "create"]
+                        },
+                        "description": "Create Midtrans payment transaction. Returns token and redirectUrl for payment page."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Payment Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/payment/status/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "payment", "status", "1"]
+                        },
+                        "description": "Check payment status for an order"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Midtrans Webhook (Notification)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"transaction_status\": \"settlement\",\n  \"order_id\": \"ORDER-1-1733456789\",\n  \"payment_type\": \"gopay\",\n  \"gross_amount\": \"44000.00\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/payment/notification",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "payment", "notification"]
+                        },
+                        "description": "Webhook endpoint for Midtrans notifications (automatically called by Midtrans)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Kasir",
+            "item": [
+                {
+                    "name": "Toggle Menu Availability - Set Unavailable",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"isAvailable\": false\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/kasir/menus/1/availability",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "kasir", "menus", "1", "availability"]
+                        },
+                        "description": "Mark menu as unavailable (sold out) - Requires Kasir authentication"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Toggle Menu Availability - Set Available",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"isAvailable\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/kasir/menus/1/availability",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "kasir", "menus", "1", "availability"]
+                        },
+                        "description": "Mark menu as available again - Requires Kasir authentication"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Admin - User Management",
+            "item": [
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/users",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "users"]
+                        },
+                        "description": "Get all users (Admin only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get User by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/users/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "users", "1"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update User",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"kasir_updated\",\n  \"role\": \"KASIR\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/users/2",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "users", "2"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete User",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/users/2",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "users", "2"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Admin - Category Management",
+            "item": [
+                {
+                    "name": "Create Category",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"New Category\",\n  \"description\": \"Category description\",\n  \"icon\": \"🍽️\",\n  \"order\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/categories",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "categories"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Category",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Category\",\n  \"description\": \"Updated description\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/categories/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "categories", "1"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Category",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/categories/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "categories", "1"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Admin - Menu Management",
+            "item": [
+                {
+                    "name": "Create Menu (JSON - No Image)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"New Menu Item\",\n  \"description\": \"Delicious new item\",\n  \"price\": 25000,\n  \"categoryId\": 1,\n  \"isAvailable\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/menus",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "menus"]
+                        },
+                        "description": "Create menu without image upload"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Menu with Image Upload",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "name",
+                                    "value": "Nasi Goreng Premium",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "Nasi goreng spesial dengan topping lengkap",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "price",
+                                    "value": "30000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "categoryId",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "isAvailable",
+                                    "value": "true",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "image",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/menus",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "menus"]
+                        },
+                        "description": "Create menu with image upload. Select an image file in the 'image' field."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Menu (JSON - No Image)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Menu\",\n  \"price\": 35000,\n  \"isAvailable\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/menus/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "menus", "1"]
+                        },
+                        "description": "Update menu without changing image"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Menu with New Image",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "name",
+                                    "value": "Nasi Goreng Super Premium",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "price",
+                                    "value": "40000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "image",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/menus/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "menus", "1"]
+                        },
+                        "description": "Update menu and replace image. Old image will be automatically deleted."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Menu",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/menus/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "admin", "menus", "1"]
+                        },
+                        "description": "Delete menu and its associated image file"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "AI Chat Assistant",
+            "item": [
+                {
+                    "name": "Chat with AI",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"message\": \"Rekomendasi menu untuk makan siang?\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/ai/chat",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "ai", "chat"]
+                        },
+                        "description": "Chat with AI assistant about menu recommendations"
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}

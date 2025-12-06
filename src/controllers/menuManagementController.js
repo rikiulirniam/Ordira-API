@@ -7,6 +7,7 @@ import {
   updateMenu,
   deleteMenu,
 } from '../services/menuService.js';
+import { deleteImageFile } from '../middlewares/upload.js';
 
 /**
  * Get all menus (Admin view - includes unavailable)
@@ -45,7 +46,7 @@ export const getMenu = async (req, res, next) => {
  */
 export const createNewMenu = async (req, res, next) => {
   try {
-    const { name, price, description, image, categoryId, isAvailable } = req.body;
+    const { name, price, description, categoryId, isAvailable } = req.body;
 
     if (!name || !price || !categoryId) {
       return next(new ApiError(400, 'Name, price, and categoryId are required'));
@@ -55,9 +56,17 @@ export const createNewMenu = async (req, res, next) => {
       return next(new ApiError(400, 'Price must be a positive number'));
     }
 
+    // Get image path from uploaded file
+    const image = req.file ? `/uploads/menus/${req.file.filename}` : null;
+
     const menu = await createMenu({ name, price, description, image, categoryId, isAvailable });
     return successResponse(res, menu, 'Menu created successfully', 201);
   } catch (error) {
+    // Delete uploaded file if menu creation fails
+    if (req.file) {
+      deleteImageFile(req.file.filename);
+    }
+    
     if (error.message === 'Category not found') {
       return next(new ApiError(404, error.message));
     }
@@ -71,15 +80,32 @@ export const createNewMenu = async (req, res, next) => {
 export const updateMenuData = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, price, description, image, categoryId, isAvailable } = req.body;
+    const { name, price, description, categoryId, isAvailable } = req.body;
 
     if (price !== undefined && price < 0) {
       return next(new ApiError(400, 'Price must be a positive number'));
     }
 
+    // Get old menu data to delete old image if new one is uploaded
+    const oldMenu = await getMenuById(parseInt(id));
+    
+    // Get new image path from uploaded file
+    const image = req.file ? `/uploads/menus/${req.file.filename}` : undefined;
+
     const menu = await updateMenu(parseInt(id), { name, price, description, image, categoryId, isAvailable });
+    
+    // Delete old image if new one was uploaded
+    if (req.file && oldMenu.image) {
+      deleteImageFile(oldMenu.image);
+    }
+    
     return successResponse(res, menu, 'Menu updated successfully');
   } catch (error) {
+    // Delete uploaded file if update fails
+    if (req.file) {
+      deleteImageFile(req.file.filename);
+    }
+    
     if (error.message === 'Menu not found') {
       return next(new ApiError(404, error.message));
     }
@@ -96,7 +122,17 @@ export const updateMenuData = async (req, res, next) => {
 export const removeMenu = async (req, res, next) => {
   try {
     const { id } = req.params;
+    
+    // Get menu data to delete associated image
+    const menu = await getMenuById(parseInt(id));
+    
     const result = await deleteMenu(parseInt(id));
+    
+    // Delete image file if exists
+    if (menu.image) {
+      deleteImageFile(menu.image);
+    }
+    
     return successResponse(res, result, 'Menu deleted successfully');
   } catch (error) {
     if (error.message === 'Menu not found') {

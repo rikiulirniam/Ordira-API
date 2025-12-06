@@ -1,21 +1,13 @@
 # API Authentication Guide
 
-## Default Users (setelah seed)
+## Default User (setelah seed)
 
 ### Admin
-- Username: `admin`
-- Password: `admin123`
+- Username: `admin` (configurable via `ADMIN_USERNAME` env var)
+- Password: `admin123` (configurable via `ADMIN_PASSWORD` env var)
 - Role: `ADMIN`
 
-### Kasir
-- Username: `kasir`
-- Password: `kasir123`
-- Role: `KASIR`
-
-### Koki
-- Username: `koki`
-- Password: `koki123`
-- Role: `KOKI`
+**Note:** Seeder hanya membuat satu admin user. User lain (Kasir, dll) harus dibuat melalui endpoint register.
 
 ## Cara Login dan Menggunakan Bearer Token
 
@@ -61,9 +53,9 @@ Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 {
-  "username": "koki01",
-  "password": "password123",
-  "role": "KOKI"
+  "username": "kasir",
+  "password": "kasir123",
+  "role": "KASIR"
 }
 ```
 
@@ -89,13 +81,12 @@ curl -X POST http://localhost:3000/auth/login \
 curl -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
-  -d '{"username":"koki01","password":"password123","role":"KOKI"}'
+  -d '{"username":"kasir","password":"kasir123","role":"KASIR"}'
 ```
 
 ## Roles
-- `ADMIN` - Full access
-- `KASIR` - Kasir/Cashier
-- `KOKI` - Chef/Cook
+- `ADMIN` - Full access to all features
+- `KASIR` - Cashier access (can manage orders and menu availability)
 
 ## Troubleshooting
 
