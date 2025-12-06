@@ -40,6 +40,10 @@ SMTP_HOST="smtp.gmail.com"
 SMTP_PORT=587
 SMTP_USER="youremail@gmail.com"
 SMTP_PASSWORD="your-app-password"
+
+# Admin user credentials (for seeding)
+ADMIN_USERNAME="admin"
+ADMIN_PASSWORD="admin123"
 ```
 
 ---
@@ -93,7 +97,7 @@ npx prisma generate
 # Run migration
 npx prisma migrate dev
 
-# Seed database (optional)
+# Seed database (creates admin user from env vars)
 npm run seed
 ```
 
@@ -109,18 +113,18 @@ Server running di: `http://localhost:3000`
 
 ---
 
-## 🧪 Testing Payment Flow
+## Testing Payment Flow
 
 ### Complete Test Scenario:
 
-#### 1. Login as Kasir
+#### 1. Login as Admin
 
 ```bash
 curl -X POST http://localhost:3000/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "kasir",
-    "password": "kasir123"
+    "username": "admin",
+    "password": "admin123"
   }'
 ```
 
@@ -253,9 +257,11 @@ curl http://localhost:3000/api/payment/status/1
 
 ---
 
-## 🎯 Testing Kasir Features
+## Testing Kasir Features
 
 ### Toggle Menu Availability
+
+Note: You need to create a KASIR user first via admin registration endpoint.
 
 ```bash
 # Login as Kasir first, then:

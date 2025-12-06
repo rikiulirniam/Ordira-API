@@ -142,6 +142,10 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
+
+# Admin User Credentials (for seeding)
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
 ```
 
 **Catatan Penting:**
@@ -180,15 +184,16 @@ npx prisma migrate dev
 
 ### 4. Seed Database (Optional)
 
-Membuat user default untuk testing:
+Membuat admin user untuk testing:
 
 ```bash
 npm run seed
 ```
 
-**User default yang dibuat:**
-- **Admin:** username: `admin`, password: `admin123`
-- **Kasir:** username: `kasir`, password: `kasir123`
+**Admin user yang dibuat:**
+- Username dan password diambil dari environment variables `ADMIN_USERNAME` dan `ADMIN_PASSWORD`
+- Default: username: `admin`, password: `admin123`
+- Role: `ADMIN`
 
 ## Menjalankan Aplikasi
 
