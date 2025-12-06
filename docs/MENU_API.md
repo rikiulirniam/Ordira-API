@@ -1,10 +1,12 @@
-# Menu & Kategori API Documentation
+# Menu & Category API Documentation
+
+Public endpoints for accessing menu and category data.
 
 ## Endpoints
 
 ### 1. Get All Categories
 ```
-GET /api/kategoris
+GET /api/categories
 ```
 **Public endpoint**
 
@@ -16,10 +18,10 @@ GET /api/kategoris
   "data": [
     {
       "id": 1,
-      "nama": "Nasi Goreng",
-      "deskripsi": "Berbagai varian nasi goreng spesial",
+      "name": "Nasi Goreng",
+      "description": "Berbagai varian nasi goreng spesial",
       "icon": "🍳",
-      "urutan": 1,
+      "order": 1,
       "isActive": true,
       "_count": {
         "menus": 4
@@ -29,15 +31,18 @@ GET /api/kategoris
 }
 ```
 
-### 2. Get Menus by Category
+### 2. Get All Menus
 ```
-GET /api/kategoris/:kategoriId/menus
+GET /api/menus
 ```
 **Public endpoint**
 
+**Query Parameters:**
+- `categoryId` (optional): Filter by category ID
+
 **Example:**
 ```bash
-curl http://localhost:3000/api/kategoris/1/menus
+curl http://localhost:3000/api/menus?categoryId=1
 ```
 
 **Response:**
@@ -48,29 +53,24 @@ curl http://localhost:3000/api/kategoris/1/menus
   "data": [
     {
       "id": 1,
-      "nama": "Nasi Goreng Ayam",
-      "harga": 18000,
-      "deskripsi": "Nasi goreng dengan potongan ayam suwir",
-      "gambar": null,
-      "kategoriId": 1,
-      "kategori": {
+      "name": "Nasi Goreng Ayam",
+      "price": 18000,
+      "description": "Nasi goreng dengan potongan ayam suwir",
+      "image": "/uploads/menus/menu-123456789.jpg",
+      "categoryId": 1,
+      "isAvailable": true,
+      "category": {
         "id": 1,
-        "nama": "Nasi Goreng"
+        "name": "Nasi Goreng"
       }
     }
   ]
 }
 ```
 
-### 3. Get All Menus
-```
-GET /api/menus
-```
-**Public endpoint**
+**Note:** Only available menus are returned to public.
 
-Returns all available menus grouped by category.
-
-### 4. Get Menu by ID
+### 3. Get Menu by ID
 ```
 GET /api/menus/:id
 ```
@@ -81,43 +81,54 @@ GET /api/menus/:id
 curl http://localhost:3000/api/menus/1
 ```
 
-### 5. Search Menus
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Menu retrieved successfully",
+  "data": {
+    "id": 1,
+    "name": "Nasi Goreng Ayam",
+    "price": 18000,
+    "description": "Nasi goreng dengan potongan ayam suwir",
+    "image": "/uploads/menus/menu-123456789.jpg",
+    "categoryId": 1,
+    "isAvailable": true,
+    "category": {
+      "id": 1,
+      "name": "Nasi Goreng"
+    }
+  }
+}
 ```
-GET /api/menus/search?q=ayam
+
+## Image Access
+
+Menu images are accessible via:
 ```
-**Public endpoint**
-
-Search menus by name or description.
-
-**Example:**
-```bash
-curl "http://localhost:3000/api/menus/search?q=ayam"
+http://localhost:3000/uploads/menus/{filename}
 ```
 
-## Categories Seeded (12 total)
+Example:
+```
+http://localhost:3000/uploads/menus/menu-1733456789123-987654321.jpg
+```
 
-1. **Nasi Goreng** 🍳 - 4 menu
-2. **Ayam** 🍗 - 4 menu
-3. **Mie** 🍜 - 4 menu
-4. **Soto & Sop** 🍲 - 4 menu
-5. **Seafood** 🦐 - 4 menu
-6. **Nasi Campur** 🍱 - 4 menu
-7. **Snack & Gorengan** 🍟 - 4 menu
-8. **Minuman Dingin** 🧊 - 4 menu
-9. **Minuman Panas** ☕ - 4 menu
-10. **Jus & Smoothie** 🥤 - 4 menu
-11. **Dessert** 🍰 - 4 menu
-12. **Paket Hemat** 💰 - 4 menu
+## Admin Management
 
-**Total: 48 menus**
+For admin operations (create, update, delete menus with image upload), see:
+- [ADMIN_API.md](./ADMIN_API.md) - Complete CRUD operations
+- [IMAGE_UPLOAD.md](./IMAGE_UPLOAD.md) - Image upload documentation
 
-## Run Seed
+## Database Seeding
+
+The seeder creates only the admin user. Categories and menus must be created via admin endpoints.
 
 ```bash
 npm run seed
 ```
 
 This will create:
-- 2 users (admin, kasir)
-- 12 categories
-- 48 menus
+- 1 admin user (username and password from environment variables)
+
+To populate categories and menus, use the admin API endpoints.

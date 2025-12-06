@@ -16,7 +16,7 @@ Authorization: Bearer YOUR_ADMIN_TOKEN
 
 ### 1. Get All Users
 ```
-GET /api/users
+GET /api/admin/users
 ```
 
 **Response:**
@@ -38,18 +38,18 @@ GET /api/users
 
 ### 2. Get User by ID
 ```
-GET /api/users/:id
+GET /api/admin/users/:id
 ```
 
 **Example:**
 ```bash
 curl -H "Authorization: Bearer TOKEN" \
-  http://localhost:3000/api/users/1
+  http://localhost:3000/api/admin/users/1
 ```
 
 ### 3. Create User
 ```
-POST /api/users
+POST /api/auth/register
 ```
 
 **Request Body:**
@@ -65,7 +65,7 @@ POST /api/users
 
 **Example:**
 ```bash
-curl -X POST http://localhost:3000/api/users \
+curl -X POST http://localhost:3000/api/auth/register \
   -H "Authorization: Bearer TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"username": "kasir02", "password": "kasir123", "role": "KASIR"}'
@@ -73,7 +73,7 @@ curl -X POST http://localhost:3000/api/users \
 
 ### 4. Update User
 ```
-PUT /api/users/:id
+PUT /api/admin/users/:id
 ```
 
 **Request Body:** (all fields optional)
@@ -87,7 +87,7 @@ PUT /api/users/:id
 
 **Example:**
 ```bash
-curl -X PUT http://localhost:3000/api/users/2 \
+curl -X PUT http://localhost:3000/api/admin/users/2 \
   -H "Authorization: Bearer TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"password": "newpassword"}'
@@ -95,12 +95,12 @@ curl -X PUT http://localhost:3000/api/users/2 \
 
 ### 5. Delete User
 ```
-DELETE /api/users/:id
+DELETE /api/admin/users/:id
 ```
 
 **Example:**
 ```bash
-curl -X DELETE http://localhost:3000/api/users/3 \
+curl -X DELETE http://localhost:3000/api/admin/users/3 \
   -H "Authorization: Bearer TOKEN"
 ```
 
@@ -272,22 +272,35 @@ GET /api/admin/menus/:id
 POST /api/admin/menus
 ```
 
-**Request Body:**
+**Content-Type:** 
+- `application/json` (without image)
+- `multipart/form-data` (with image upload)
+
+**Request Body (JSON - No Image):**
 ```json
 {
   "name": "Nasi Goreng Special",
   "price": 25000,
   "description": "Nasi goreng dengan telur, ayam, dan seafood",
-  "image": "https://example.com/image.jpg",
   "categoryId": 1,
   "isAvailable": true
 }
 ```
 
+**Request Body (Form Data - With Image):**
+```
+name: Nasi Goreng Special
+price: 25000
+description: Nasi goreng dengan telur, ayam, dan seafood
+categoryId: 1
+isAvailable: true
+image: [FILE]
+```
+
 **Required:** `name`, `price`, `categoryId`
 **Optional:** `description`, `image`, `isAvailable`
 
-**Example:**
+**Example (JSON):**
 ```bash
 curl -X POST http://localhost:3000/api/admin/menus \
   -H "Authorization: Bearer TOKEN" \
@@ -299,24 +312,46 @@ curl -X POST http://localhost:3000/api/admin/menus \
   }'
 ```
 
+**Example (With Image Upload):**
+```bash
+curl -X POST http://localhost:3000/api/admin/menus \
+  -H "Authorization: Bearer TOKEN" \
+  -F "name=Nasi Goreng Special" \
+  -F "price=25000" \
+  -F "categoryId=1" \
+  -F "image=@/path/to/image.jpg"
+```
+
+**Note:** See [IMAGE_UPLOAD.md](./IMAGE_UPLOAD.md) for detailed image upload documentation.
+
 ### 4. Update Menu
 ```
 PUT /api/admin/menus/:id
 ```
 
-**Request Body:** (all fields optional)
+**Content-Type:** 
+- `application/json` (without image)
+- `multipart/form-data` (with image upload)
+
+**Request Body (JSON):** (all fields optional)
 ```json
 {
   "name": "Nasi Goreng Spesial Premium",
   "price": 30000,
   "description": "Updated description",
-  "image": "https://example.com/new-image.jpg",
   "categoryId": 2,
   "isAvailable": false
 }
 ```
 
-**Example:**
+**Request Body (Form Data - With New Image):**
+```
+name: Nasi Goreng Spesial Premium
+price: 30000
+image: [NEW_FILE]
+```
+
+**Example (JSON):**
 ```bash
 curl -X PUT http://localhost:3000/api/admin/menus/1 \
   -H "Authorization: Bearer TOKEN" \
@@ -324,12 +359,26 @@ curl -X PUT http://localhost:3000/api/admin/menus/1 \
   -d '{"price": 20000, "isAvailable": true}'
 ```
 
+**Example (Replace Image):**
+```bash
+curl -X PUT http://localhost:3000/api/admin/menus/1 \
+  -H "Authorization: Bearer TOKEN" \
+  -F "image=@/path/to/new-image.jpg"
+```
+
+**Note:** 
+- When uploading new image, old image will be automatically deleted
+- To update menu without changing image, use JSON format
+- See [IMAGE_UPLOAD.md](./IMAGE_UPLOAD.md) for detailed image upload documentation.
+
 ### 5. Delete Menu
 ```
 DELETE /api/admin/menus/:id
 ```
 
-**Note:** Cannot delete menu that has been ordered. Mark as unavailable instead.
+**Note:** 
+- Cannot delete menu that has been ordered. Mark as unavailable instead.
+- Associated image file will be automatically deleted from server.
 
 **Example:**
 ```bash
