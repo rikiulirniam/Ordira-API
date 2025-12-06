@@ -5,7 +5,6 @@ import {
   getOrderById,
   getOrdersByTable,
   getAllOrders,
-  updateOrderStatus,
   updatePaymentStatus,
   cancelOrder,
   addPaymentLog,
@@ -16,7 +15,7 @@ import {
  */
 export const createNewOrder = async (req, res, next) => {
   try {
-    const { tableNumber, items, paymentMethod } = req.body;
+    const { tableNumber, items, paymentMethod, customerEmail } = req.body;
 
     if (!tableNumber) {
       return next(new ApiError(400, 'Table number is required'));
@@ -36,7 +35,7 @@ export const createNewOrder = async (req, res, next) => {
       }
     }
 
-    const order = await createOrder({ tableNumber, items, paymentMethod });
+    const order = await createOrder({ tableNumber, items, paymentMethod, customerEmail });
     return successResponse(res, order, 'Order created successfully', 201);
   } catch (error) {
     return next(new ApiError(500, error.message || 'Failed to create order'));
@@ -77,10 +76,9 @@ export const getTableOrders = async (req, res, next) => {
  */
 export const listOrders = async (req, res, next) => {
   try {
-    const { status, paymentStatus, limit, offset } = req.query;
+    const { paymentStatus, limit, offset } = req.query;
     
     const result = await getAllOrders({
-      status,
       paymentStatus,
       limit: limit ? parseInt(limit) : 50,
       offset: offset ? parseInt(offset) : 0,
@@ -89,25 +87,6 @@ export const listOrders = async (req, res, next) => {
     return successResponse(res, result, 'Orders retrieved successfully');
   } catch (error) {
     return next(new ApiError(500, error.message || 'Failed to get orders'));
-  }
-};
-
-/**
- * Update order status - Admin/Kasir only
- */
-export const updateOrder = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { orderStatus } = req.body;
-
-    if (!orderStatus) {
-      return next(new ApiError(400, 'Order status is required'));
-    }
-
-    const order = await updateOrderStatus(parseInt(id), orderStatus);
-    return successResponse(res, order, 'Order status updated successfully');
-  } catch (error) {
-    return next(new ApiError(500, error.message || 'Failed to update order'));
   }
 };
 
@@ -164,21 +143,19 @@ export const cancelOrderController = async (req, res, next) => {
  */
 export const getOrderStats = async (req, res, next) => {
   try {
+    const { prisma } = await import('../models/prismaClient.js');
+    
     const [
       totalOrders,
-      pendingOrders,
-      processingOrders,
-      readyOrders,
-      doneOrders,
       unpaidOrders,
+      paidOrders,
+      cancelledOrders,
       todayRevenue,
     ] = await Promise.all([
       prisma.order.count(),
-      prisma.order.count({ where: { orderStatus: 'PENDING' } }),
-      prisma.order.count({ where: { orderStatus: 'PROCESSING' } }),
-      prisma.order.count({ where: { orderStatus: 'READY' } }),
-      prisma.order.count({ where: { orderStatus: 'DONE' } }),
       prisma.order.count({ where: { paymentStatus: 'UNPAID' } }),
+      prisma.order.count({ where: { paymentStatus: 'PAID' } }),
+      prisma.order.count({ where: { paymentStatus: 'CANCELLED' } }),
       prisma.order.aggregate({
         where: {
           paymentStatus: 'PAID',
@@ -192,13 +169,11 @@ export const getOrderStats = async (req, res, next) => {
 
     const stats = {
       totalOrders,
-      ordersByStatus: {
-        pending: pendingOrders,
-        processing: processingOrders,
-        ready: readyOrders,
-        done: doneOrders,
+      ordersByPaymentStatus: {
+        unpaid: unpaidOrders,
+        paid: paidOrders,
+        cancelled: cancelledOrders,
       },
-      unpaidOrders,
       todayRevenue: todayRevenue._sum.total || 0,
     };
 
