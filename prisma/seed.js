@@ -10,7 +10,7 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Starting seed...');
+  console.log('Starting seed...');
 
   // Create admin user
   const adminPassword = await bcrypt.hash('admin123', 10);
@@ -23,7 +23,7 @@ async function main() {
       role: 'ADMIN',
     },
   });
-  console.log('✅ Admin user created:', { id: admin.id, username: admin.username, role: admin.role });
+  console.log('Admin user created:', { id: admin.id, username: admin.username, role: admin.role });
 
   // Create sample kasir user
   const kasirPassword = await bcrypt.hash('kasir123', 10);
@@ -36,10 +36,10 @@ async function main() {
       role: 'KASIR',
     },
   });
-  console.log('✅ Kasir user created:', { id: kasir.id, username: kasir.username, role: kasir.role });
+  console.log('Kasir user created:', { id: kasir.id, username: kasir.username, role: kasir.role });
 
   // Delete existing data
-  console.log('🗑️  Clearing existing menu and category data...');
+  console.log('Clearing existing menu and category data...');
   await prisma.menu.deleteMany({});
   await prisma.category.deleteMany({});
 
@@ -191,7 +191,7 @@ async function main() {
     },
   ];
 
-  console.log('📦 Creating categories and menus...');
+  console.log('Creating categories and menus...');
   
   for (const cat of categories) {
     const { menus, ...categoryData } = cat;
@@ -208,21 +208,21 @@ async function main() {
       },
     });
     
-    console.log(`✅ Created category: ${category.name} with ${category.menus.length} menus`);
+    console.log(`Created category: ${category.name} with ${category.menus.length} menus`);
   }
 
   const totalCategories = await prisma.category.count();
   const totalMenus = await prisma.menu.count();
   
-  console.log(`\n📊 Summary:`);
+  console.log(`\nSummary:`);
   console.log(`   - Total Categories: ${totalCategories}`);
   console.log(`   - Total Menus: ${totalMenus}`);
-  console.log('🎉 Seed completed!');
+  console.log('Seed completed!');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seed failed:', e);
+    console.error('Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {

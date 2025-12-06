@@ -2,35 +2,35 @@
 
 Backend service untuk aplikasi Ordira (Restaurant Order Management System) menggunakan Express.js dengan clean architecture dan Prisma ORM.
 
-## 📋 Daftar Isi
+## Daftar Isi
 
-- [Fitur](#-fitur)
-- [Tech Stack](#-tech-stack)
-- [Struktur Folder](#-struktur-folder)
-- [Instalasi](#-instalasi)
-- [Konfigurasi](#-konfigurasi)
-- [Database Setup](#-database-setup)
-- [Menjalankan Aplikasi](#-menjalankan-aplikasi)
-- [API Endpoints](#-api-endpoints)
-- [Authentication](#-authentication)
-- [Testing](#-testing)
+- [Fitur](#fitur)
+- [Tech Stack](#tech-stack)
+- [Struktur Folder](#struktur-folder)
+- [Instalasi](#instalasi)
+- [Konfigurasi](#konfigurasi)
+- [Database Setup](#database-setup)
+- [Menjalankan Aplikasi](#menjalankan-aplikasi)
+- [API Endpoints](#api-endpoints)
+- [Authentication](#authentication)
+- [Testing](#testing)
 
-## ✨ Fitur
+## Fitur
 
-- 🔐 Authentication & Authorization (JWT)
-- 👥 User Management (Admin, Kasir, Koki)
-- 🍽️ Menu Management with Availability Control
-- 🪑 Table Management (Meja)
-- 📝 Order Management with Item Notes
-- 💳 Payment Processing (QRIS, Cash, E-Payment)
-- 🏦 **Midtrans Payment Gateway Integration** (Sandbox & Production)
-- 📧 **Automated Email Receipts** after successful payment
-- 📊 Payment Logs & Transaction History
-- 🔒 Role-based Access Control
-- 🤖 AI-Powered Chat Assistant (Kolosal AI)
-- 📋 Kasir Menu Availability Management
+- Authentication & Authorization (JWT)
+- User Management (Admin, Kasir)
+- Menu Management with Availability Control
+- Table Management (Meja)
+- Order Management with Item Notes
+- Payment Processing (QRIS, Cash, E-Payment)
+- **Midtrans Payment Gateway Integration** (Sandbox & Production)
+- **Automated Email Receipts** after successful payment
+- Payment Logs & Transaction History
+- Role-based Access Control
+- AI-Powered Chat Assistant (Kolosal AI)
+- Kasir Menu Availability Management
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Runtime:** Node.js v22+
 - **Framework:** Express.js
@@ -45,7 +45,7 @@ Backend service untuk aplikasi Ordira (Restaurant Order Management System) mengg
 - **Dev Tools:** Nodemon
 - **Testing:** Jest
 
-## 📁 Struktur Folder
+## Struktur Folder
 
 ```
 api/
@@ -85,7 +85,7 @@ api/
 └── README.md
 ```
 
-## 🚀 Instalasi
+## Instalasi
 
 ### Prerequisites
 
@@ -112,7 +112,7 @@ npm install
 cp .env.example .env
 ```
 
-## ⚙️ Konfigurasi
+## Konfigurasi
 
 Edit file `.env` dengan konfigurasi Anda:
 
@@ -151,7 +151,7 @@ SMTP_PASSWORD=your-app-password
 - Untuk Midtrans: Daftar di https://dashboard.sandbox.midtrans.com/
 - Untuk Gmail SMTP: Gunakan App Password (bukan password utama Gmail)
 
-## 🗄️ Database Setup
+## Database Setup
 
 ### 1. Buat Database
 
@@ -190,7 +190,7 @@ npm run seed
 - **Admin:** username: `admin`, password: `admin123`
 - **Kasir:** username: `kasir`, password: `kasir123`
 
-## 🏃 Menjalankan Aplikasi
+## Menjalankan Aplikasi
 
 ### Development Mode
 
@@ -214,7 +214,7 @@ npx prisma studio
 
 Buka `http://localhost:5555` untuk melihat data dalam GUI.
 
-## 📡 API Endpoints
+## API Endpoints
 
 Untuk dokumentasi lengkap, lihat folder `docs/`:
 - [AUTH_GUIDE.md](./docs/AUTH_GUIDE.md) - Authentication & Authorization
@@ -231,22 +231,22 @@ Untuk dokumentasi lengkap, lihat folder `docs/`:
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/auth/login` | ❌ | Login user |
-| POST | `/auth/register` | ✅ Admin | Register user baru |
+| POST | `/auth/login` | No | Login user |
+| POST | `/auth/register` | Yes (Admin) | Register user baru |
 
-#### Payment (NEW! 💳)
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/payment/create` | ❌ | Create Midtrans payment |
-| POST | `/api/payment/notification` | ❌ | Midtrans webhook |
-| GET | `/api/payment/status/:orderId` | ❌ | Check payment status |
-
-#### Kasir (NEW! 📋)
+#### Payment (NEW)
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| PATCH | `/api/kasir/menus/:id/availability` | ✅ Kasir | Toggle menu availability |
+| POST | `/api/payment/create` | No | Create Midtrans payment |
+| POST | `/api/payment/notification` | No | Midtrans webhook |
+| GET | `/api/payment/status/:orderId` | No | Check payment status |
+
+#### Kasir (NEW)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| PATCH | `/api/kasir/menus/:id/availability` | Yes (Kasir) | Toggle menu availability |
 
 ### Response Format
 
@@ -275,7 +275,7 @@ Untuk dokumentasi lengkap, lihat folder `docs/`:
 }
 ```
 
-## 🔐 Authentication
+## Authentication
 
 ### 1. Login
 
@@ -321,7 +321,7 @@ curl -X POST http://localhost:3000/auth/register \
   }'
 ```
 
-## 🧪 Testing
+## Testing
 
 Jalankan test suite:
 
@@ -329,7 +329,7 @@ Jalankan test suite:
 npm test
 ```
 
-## 📚 Database Schema
+## Database Schema
 
 ### Models
 
@@ -369,7 +369,7 @@ PENDING → PAID → PROCESSING → READY → DONE
 - `CREDIT_CARD` - Credit/Debit Card
 - `NONE` - No payment method selected
 
-## 🔧 Scripts
+## Scripts
 
 ```bash
 npm start          # Jalankan production server
@@ -381,7 +381,7 @@ npx prisma migrate dev  # Buat dan jalankan migrasi baru
 npx prisma generate     # Generate Prisma Client
 ```
 
-## 📝 Catatan Arsitektur
+## Catatan Arsitektur
 
 - **Clean Architecture:** Pemisahan concern yang jelas (routes → controllers → services → models)
 - **Middleware Chain:** Request flow yang terstruktur dengan middleware
@@ -390,7 +390,7 @@ npx prisma generate     # Generate Prisma Client
 - **Database:** Prisma ORM dengan PostgreSQL adapter untuk type-safety
 - **ESM Modules:** Modern JavaScript dengan `type: module`
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork repository
 2. Buat feature branch (`git checkout -b feature/AmazingFeature`)
@@ -398,14 +398,14 @@ npx prisma generate     # Generate Prisma Client
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open Pull Request
 
-## 📄 License
+## License
 
 MIT License
 
-## 👥 Authors
+## Authors
 
 - Your Team Name
 
-## 📞 Support
+## Support
 
 Untuk pertanyaan atau bantuan, silakan buka issue di repository ini.
