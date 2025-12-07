@@ -18,40 +18,51 @@ export async function handleCustomerChat(message) {
     },
   });
 
-  // Create menu list string for AI context
+  // Create menu list with ID for AI context
   const menuContext = availableMenus.map(
-    (m) => `- ${m.name} (${m.category.name}) - Rp ${m.price.toLocaleString('id-ID')}`
+    (m) => `ID:${m.id} - ${m.name} (Kategori: ${m.category.name}) - Rp ${m.price.toLocaleString('id-ID')}`
   ).join('\n');
 
   const systemPrompt = `Anda adalah asisten restoran Ordira yang membantu pelanggan memilih menu.
 
-MENU YANG TERSEDIA:
+DAFTAR MENU LENGKAP:
 ${menuContext}
 
-TUGAS ANDA:
-1. Baca permintaan pelanggan dengan cermat
-2. Pilih 2-5 menu yang paling sesuai dari daftar menu di atas
-3. Berikan response dalam format JSON STRICT dengan struktur:
+CARA KERJA:
+1. Identifikasi kata kunci utama dari permintaan pelanggan
+2. Cari menu yang KATEGORI-nya cocok dengan kata kunci
+3. Ambil ID menu yang sesuai dari daftar di atas
+4. Rekomendasikan 2-5 menu yang paling relevan
+
+PANDUAN KATEGORI:
+- "minuman", "segar", "dingin", "es" → Pilih dari kategori: Minuman Dingin, Jus & Smoothie
+- "kopi", "teh panas", "hangat" → Pilih dari kategori: Minuman Panas
+- "nasi goreng" → Pilih dari kategori: Nasi Goreng
+- "ayam" → Pilih dari kategori: Ayam
+- "mie", "bakmi" → Pilih dari kategori: Mie
+- "seafood", "udang", "ikan" → Pilih dari kategori: Seafood
+- "pedas" → Pilih menu dengan kata: geprek, sambal, pedas
+- "manis", "dessert", "penutup" → Pilih dari kategori: Dessert
+
+FORMAT OUTPUT (JSON KETAT):
 {
-  "intro": "Kalimat pembuka yang ramah (1-2 kalimat)",
-  "recommendations": [1, 2, 3],
-  "closing": "Kalimat penutup yang mengajak bertindak (1 kalimat)"
+  "intro": "Sambutan yang sesuai permintaan",
+  "recommendations": [ID1, ID2, ID3],
+  "closing": "Ajakan untuk memesan"
 }
 
-ATURAN:
-- "intro": Sambutan ramah yang acknowledge permintaan pelanggan
-- "recommendations": Array berisi ID menu (angka) yang direkomendasikan, pilih 2-5 menu
-- "closing": Ajakan untuk memesan atau tanya lebih lanjut
-- Hanya rekomendasikan menu yang ADA di daftar menu
-- Response HARUS valid JSON, tidak ada teks tambahan
-- Jangan gunakan markdown code block
+CONTOH:
+Input: "minuman segar dong"
+Output: {"intro":"Untuk kesegaran Anda, saya rekomendasikan minuman dingin kami!","recommendations":[33,34,35],"closing":"Silakan pilih yang paling menggoda!"}
 
-CONTOH OUTPUT:
-{"intro":"Untuk Anda yang suka pedas, saya punya rekomendasi yang pas!","recommendations":[1,3,5],"closing":"Silakan pilih menu favorit Anda dan selamat menikmati!"}`;
+PENTING:
+- Gunakan ID yang PERSIS dari daftar menu di atas
+- Pastikan kategori menu sesuai dengan permintaan
+- Output HARUS JSON murni tanpa markdown`;
 
   const response = await chatWithSystem(systemPrompt, message, {
-    temperature: 0.7,
-    maxTokens: 300,
+    temperature: 0.3,
+    maxTokens: 400,
   });
 
   // Parse AI response
@@ -67,12 +78,32 @@ CONTOH OUTPUT:
     
     aiData = JSON.parse(cleanResponse);
   } catch (error) {
-    // Fallback if AI doesn't return valid JSON
+    // Fallback with smart filtering based on keywords
     console.error('Failed to parse AI response:', error);
+    
+    // Try to do smart filtering based on message keywords
+    const lowerMsg = message.toLowerCase();
+    let filteredMenus = availableMenus;
+    
+    if (lowerMsg.includes('minuman') || lowerMsg.includes('segar') || lowerMsg.includes('dingin') || lowerMsg.includes('es')) {
+      filteredMenus = availableMenus.filter(m => 
+        m.category.name.includes('Minuman Dingin') || 
+        m.category.name.includes('Jus') ||
+        m.name.toLowerCase().includes('es') ||
+        m.name.toLowerCase().includes('jus')
+      );
+    } else if (lowerMsg.includes('nasi goreng')) {
+      filteredMenus = availableMenus.filter(m => m.category.name.includes('Nasi Goreng'));
+    } else if (lowerMsg.includes('ayam')) {
+      filteredMenus = availableMenus.filter(m => m.category.name.includes('Ayam'));
+    } else if (lowerMsg.includes('kopi') || lowerMsg.includes('teh panas')) {
+      filteredMenus = availableMenus.filter(m => m.category.name.includes('Minuman Panas'));
+    }
+    
     aiData = {
-      intro: 'Terima kasih atas pertanyaan Anda!',
-      recommendations: availableMenus.slice(0, 3).map(m => m.id),
-      closing: 'Silakan pilih menu yang Anda suka!',
+      intro: 'Berikut rekomendasi menu untuk Anda!',
+      recommendations: filteredMenus.slice(0, 4).map(m => m.id),
+      closing: 'Silakan pilih menu favorit Anda!',
     };
   }
 
