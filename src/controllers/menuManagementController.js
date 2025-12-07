@@ -59,7 +59,7 @@ export const createNewMenu = async (req, res, next) => {
     // Get image path from uploaded file
     const image = req.file ? `/uploads/menus/${req.file.filename}` : null;
 
-    const menu = await createMenu({ name, price, description, image, categoryId, isAvailable });
+    const menu = await createMenu({ name, price: parseFloat(price), description, image, categoryId: parseInt(categoryId), isAvailable: Boolean(isAvailable) });
     return successResponse(res, menu, 'Menu created successfully', 201);
   } catch (error) {
     // Delete uploaded file if menu creation fails
@@ -92,7 +92,7 @@ export const updateMenuData = async (req, res, next) => {
     // Get new image path from uploaded file
     const image = req.file ? `/uploads/menus/${req.file.filename}` : undefined;
 
-    const menu = await updateMenu(parseInt(id), { name, price, description, image, categoryId, isAvailable });
+    const menu = await updateMenu(parseInt(id), { name, price: price !== undefined ? parseFloat(price) : undefined, description, image, categoryId: categoryId !== undefined ? parseInt(categoryId) : undefined, isAvailable: isAvailable !== undefined ? Boolean(isAvailable) : undefined });
     
     // Delete old image if new one was uploaded
     if (req.file && oldMenu.image) {
